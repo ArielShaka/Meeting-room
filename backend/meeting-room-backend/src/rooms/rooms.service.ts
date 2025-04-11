@@ -10,7 +10,8 @@ export class RoomsService {
     private readonly roomRepository: Repository<Room>,
   ) {}
 
-  async findAll(): Promise<Room[]> {
+  findAll(): Promise<Room[]> {
     return this.roomRepository.find();
   }
 }
+

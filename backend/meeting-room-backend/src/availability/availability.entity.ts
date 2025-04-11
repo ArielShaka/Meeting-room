@@ -10,15 +10,12 @@ export class Availability {
   @JoinColumn({ name: 'room_id' })
   room: Room;
 
-  @Column()
   @Column('time', { name: 'start_time' })
   startTime: string;
 
-  @Column()
   @Column('time', { name: 'end_time' })
-  endTime: string; 
+  endTime: string;
 
-  @Column({ default: false })
-  @Column({ name: 'is_booked' })
+  @Column({ name: 'is_booked', default: false })
   isBooked: boolean;
 }

@@ -14,19 +14,23 @@ interface TimeSlot {
 interface BookingInfoProps {
   selectedSlots: TimeSlot[];
   onBackToBooking: () => void;
-  onBookingConfirmed: () => void;  
+  onBookingConfirmed: () => void;
 }
 
-export function BookingInfoPage({ selectedSlots, onBackToBooking, onBookingConfirmed }: BookingInfoProps) {
+export function BookingInfoPage({
+  selectedSlots,
+  onBackToBooking,
+  onBookingConfirmed,
+}: BookingInfoProps) {
   const [name, setName] = useState('');
   const [showModal, setShowModal] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (name) {
-      onBookingConfirmed();
-      setShowModal(true);
-    }
+    if (!name.trim()) return;
+
+    onBookingConfirmed();
+    setShowModal(true);
   };
 
   return (
@@ -34,10 +38,8 @@ export function BookingInfoPage({ selectedSlots, onBackToBooking, onBookingConfi
       <div>
         <h2 className="text-2xl font-bold mb-4 md:text-center sm:text-left">Vem bokar?</h2>
         <h3 className="text-lg font-semibold mb-2 md:text-center sm:text-left">Förnamn och efternamn</h3>
-        <form
-          className="space-y-4"
-          onSubmit={handleSubmit}
-        >
+
+        <form className="space-y-4" onSubmit={handleSubmit}>
           <input
             type="text"
             placeholder="Skriv ditt fullständiga namn här"
@@ -53,7 +55,7 @@ export function BookingInfoPage({ selectedSlots, onBackToBooking, onBookingConfi
 
       {showModal && (
         <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex justify-center items-center z-50">
-          <div className="bg-white rounded p-6 text-center shadow-lg">
+          <div className="bg-white rounded p-6 text-center shadow-lg max-w-sm mx-auto">
             <h3 className="text-xl font-semibold mb-4">Dina rum är bokade</h3>
             <div className="text-3xl mb-4">🎉</div>
             <button

@@ -11,3 +11,4 @@ export class Room {
   @Column()
   capacity: number;
 }
+

@@ -1,13 +1,14 @@
 'use client';
+
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { fetchRooms } from './services/roomService';
 import { RoomSelector } from './components/RoomSelector';
 import { DateNavigator } from './components/DateNavigator';
 import { TimeSlotGrid } from './components/TimeSlotGrid';
+import { BookingInfoPage } from './components/BookingInfo';
 import { formatISO } from 'date-fns';
 import axios from 'axios';
-import { BookingInfoPage } from './components/BookingInfo';
 
 interface Room {
   id: number;
@@ -31,22 +32,17 @@ export default function BookingPage() {
   const [timeSlots, setTimeSlots] = useState<TimeSlot[]>([]);
   const [selectedSlots, setSelectedSlots] = useState<Record<string, TimeSlot | null>>({});
   const [showBookingInfo, setShowBookingInfo] = useState(false);
-  const [bookedRooms, setBookedRooms] = useState<string[]>([]);  
-  const [confirmedBooking, setConfirmedBooking] = useState(false); 
+  const [bookedRooms, setBookedRooms] = useState<string[]>([]);
+  const [confirmedBooking, setConfirmedBooking] = useState(false);
 
   const searchParams = useSearchParams();
 
-  function getThreeConsecutivedays(start: Date): string[] {
-    const dates: string[] = [];
-    let date = new Date(start);
-
-    while (dates.length < 3) {
-      dates.push(date.toISOString().split('T')[0]);
-      date.setDate(date.getDate() + 1);
-    }
-
-    return dates;
-  }
+  const getThreeConsecutiveDays = (start: Date): string[] =>
+    Array.from({ length: 3 }, (_, i) => {
+      const date = new Date(start);
+      date.setDate(start.getDate() + i);
+      return date.toISOString().split('T')[0];
+    });
 
   useEffect(() => {
     fetchRooms().then(setRooms);
@@ -58,47 +54,50 @@ export default function BookingPage() {
   }, [searchParams]);
 
   useEffect(() => {
-    if (rooms.length === 0) return;
+    if (!rooms.length) return;
 
     const fetchAvailability = async () => {
       try {
-        const selectedRoomsParam = selectedRooms.length > 0
-          ? selectedRooms.join(',')
-          : rooms.map(r => r.id).join(',');
+        const roomIds = selectedRooms.length
+          ? selectedRooms
+          : rooms.map((room) => room.id.toString());
 
-        const weekdays = getThreeConsecutivedays(startDate);
-        const from = formatISO(new Date(weekdays[0]));
-        const to = formatISO(new Date(weekdays[2]));
-        const { data } = await axios.get(`/api/availability`, {
-          params: { rooms: selectedRoomsParam, from, to },
+        const [from, to] = getThreeConsecutiveDays(startDate);
+        const { data } = await axios.get('/api/availability', {
+          params: {
+            rooms: roomIds.join(','),
+            from: formatISO(new Date(from)),
+            to: formatISO(new Date(to)),
+          },
         });
 
-        if (Array.isArray(data)) {
-          const mappedSlots: TimeSlot[] = data.map((slot: any) => {
-            const start = new Date(slot.startTime);
-            const end = new Date(slot.endTime);
-
-            return {
-              date: start.toISOString().split('T')[0],
-              time: `${start.toLocaleTimeString([], {
-                hour: '2-digit',
-                minute: '2-digit',
-              })} - ${end.toLocaleTimeString([], {
-                hour: '2-digit',
-                minute: '2-digit',
-              })}`,
-              available: !slot.isBooked,
-              roomName: slot.roomName,
-              capacity: slot.capacity,
-              startTime: start,
-            };
-          });
-
-          setTimeSlots(mappedSlots);
-        } else {
+        if (!Array.isArray(data)) {
           console.error('API response is not an array:', data);
           setTimeSlots([]);
+          return;
         }
+
+        const mappedSlots: TimeSlot[] = data.map((slot: any) => {
+          const start = new Date(slot.startTime);
+          const end = new Date(slot.endTime);
+
+          return {
+            date: start.toISOString().split('T')[0],
+            time: `${start.toLocaleTimeString([], {
+              hour: '2-digit',
+              minute: '2-digit',
+            })} - ${end.toLocaleTimeString([], {
+              hour: '2-digit',
+              minute: '2-digit',
+            })}`,
+            available: !slot.isBooked,
+            roomName: slot.roomName,
+            capacity: slot.capacity,
+            startTime: start,
+          };
+        });
+
+        setTimeSlots(mappedSlots);
       } catch (error) {
         console.error('Error fetching availability:', error);
         setTimeSlots([]);
@@ -108,48 +107,43 @@ export default function BookingPage() {
     fetchAvailability();
   }, [selectedRooms, startDate, rooms]);
 
-  const movedays = (date: Date, direction: 'forward' | 'backward'): Date => {
+  const moveDays = (date: Date, direction: 'forward' | 'backward') => {
     const newDate = new Date(date);
-    newDate.setDate(newDate.getDate() + (direction === 'forward' ? 3 : -3));
+    newDate.setDate(date.getDate() + (direction === 'forward' ? 3 : -3));
     return newDate;
   };
 
-  const handleNext = () => setShowBookingInfo(true); 
-
   const handleBookingConfirmation = async () => {
     try {
-      const bookingRequests = Object.values(selectedSlots)
+      const bookings = Object.values(selectedSlots)
         .filter(Boolean)
         .map((slot) => ({
-          availabilityId: slot!.startTime.getTime(), 
-          roomName: slot!.roomName, 
+          availabilityId: slot!.startTime.getTime(),
+          roomName: slot!.roomName,
         }));
-  
-      if (bookingRequests.length > 0) {
-        await axios.post('/api/availability/book', { availabilityId: bookingRequests[0].availabilityId });
-  
-        const bookedRoomNames = bookingRequests.map((request) => request.roomName);
-  
-        setBookedRooms((prev) => [...prev, ...bookedRoomNames]);
-  
-        setTimeSlots((prevSlots) =>
-          prevSlots.map((slot) =>
-            bookedRoomNames.includes(slot.roomName)
-              ? { ...slot, available: false } 
+
+      if (bookings.length > 0) {
+        await axios.post('/api/availability/book', {
+          availabilityId: bookings[0].availabilityId,
+        });
+
+        const newlyBooked = bookings.map((b) => b.roomName);
+        setBookedRooms((prev) => [...prev, ...newlyBooked]);
+
+        setTimeSlots((prev) =>
+          prev.map((slot) =>
+            newlyBooked.includes(slot.roomName)
+              ? { ...slot, available: false }
               : slot
           )
         );
-  
-        setConfirmedBooking(true); 
+
+        setConfirmedBooking(true);
       }
     } catch (error) {
       console.error('Error confirming booking:', error);
     }
   };
-  
-  
-
-  const handlePrev = () => setStartDate(prev => movedays(prev, 'backward'));
 
   return (
     <div className="flex flex-col h-screen max-w-4xl mx-auto p-4">
@@ -159,13 +153,23 @@ export default function BookingPage() {
       {!showBookingInfo ? (
         <>
           <div className="mb-4">
-            <RoomSelector rooms={rooms} selected={selectedRooms} onSelect={setSelectedRooms} />
+            <RoomSelector
+              rooms={rooms}
+              selected={selectedRooms}
+              onSelect={setSelectedRooms}
+            />
           </div>
-          <DateNavigator startDate={startDate} onPrev={handlePrev} onNext={handleNext} />
+
+          <DateNavigator
+            startDate={startDate}
+            onPrev={() => setStartDate((prev) => moveDays(prev, 'backward'))}
+            onNext={() => setShowBookingInfo(true)}
+          />
+
           <div className="flex-1 overflow-auto my-4">
             <TimeSlotGrid
               slots={timeSlots}
-              visibleDates={getThreeConsecutivedays(startDate)}
+              visibleDates={getThreeConsecutiveDays(startDate)}
               selectedSlots={selectedSlots}
               bookedRooms={bookedRooms}
               onSelectSlot={(roomName, slot) =>
@@ -173,10 +177,11 @@ export default function BookingPage() {
               }
             />
           </div>
+
           <div className="sticky bottom-0 bg-white py-4">
             <button
               disabled={Object.values(selectedSlots).filter(Boolean).length === 0}
-              onClick={handleNext}  
+              onClick={() => setShowBookingInfo(true)}
               className="bg-black text-white p-2 w-full rounded disabled:opacity-50"
             >
               Nästa
@@ -186,10 +191,8 @@ export default function BookingPage() {
       ) : (
         <BookingInfoPage
           selectedSlots={Object.values(selectedSlots).filter(Boolean) as TimeSlot[]}
-          onBackToBooking={() => {
-            setShowBookingInfo(false); 
-          }}
-          onBookingConfirmed={handleBookingConfirmation} 
+          onBackToBooking={() => setShowBookingInfo(false)}
+          onBookingConfirmed={handleBookingConfirmation}
         />
       )}
     </div>

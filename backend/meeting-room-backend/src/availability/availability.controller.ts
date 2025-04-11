@@ -7,18 +7,18 @@ export class AvailabilityController {
 
   @Get()
   async getAvailability(
-    @Query('rooms') roomIds: string,
+    @Query('rooms') rooms: string,
     @Query('from') from: string,
   ) {
-    const roomIdArray = roomIds.split(',').map(id => +id);
+    const roomIds = rooms?.split(',').map(Number).filter(Boolean) || [];
     const fromDate = new Date(from);
     const toDate = new Date(fromDate);
     toDate.setDate(toDate.getDate() + 3);
 
-    return this.availabilityService.findAvailability(roomIdArray, fromDate, toDate);
+    return this.availabilityService.findAvailability(roomIds, fromDate, toDate);
   }
 
-  @Post('/book')
+  @Post('book')
   async bookRoom(@Body() body: { availabilityId: number }) {
     try {
       const bookedSlot = await this.availabilityService.bookRoom(body.availabilityId);
@@ -28,3 +28,4 @@ export class AvailabilityController {
     }
   }
 }
+
