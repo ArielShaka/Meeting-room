@@ -5,7 +5,7 @@ import { AvailabilityController } from './availability.controller';
 import { AvailabilityService } from './availability.service';
 
 @Module({
-    imports: [TypeOrmModule.forFeature([Availability])],
+    imports: [TypeOrmModule.forFeature([Availability ])],
     controllers: [AvailabilityController],
     providers: [AvailabilityService],
     exports: [AvailabilityService],

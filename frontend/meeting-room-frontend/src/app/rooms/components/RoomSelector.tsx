@@ -27,7 +27,7 @@ export function RoomSelector({ rooms, selected, onSelect }: Props) {
   };
 
   const handleApply = () => {
-    setIsOpen(false); // just close the dropdown, the state is already applied
+    setIsOpen(false); 
   };
 
   const handleClear = () => {
@@ -59,18 +59,21 @@ export function RoomSelector({ rooms, selected, onSelect }: Props) {
     <div className="absolute bg-white border rounded mt-1 z-10 max-h-72 overflow-auto shadow-lg flex flex-col justify-between w-[18rem]">
       <ul className="max-h-52 overflow-auto">
         {rooms.map((room) => (
-          <li
-            key={room.id}
-            className="flex items-center px-4 py-2 cursor-pointer hover:bg-gray-100"
-          >
-            <input
-              type="checkbox"
-              checked={selected.includes(room.id.toString())}
-              onChange={() => handleCheckboxChange(room.id.toString())}
-              className="mr-2"
-            />
-            {room.name} ({room.capacity})
-          </li>
+         <li key={room.id} className="hover:bg-gray-100">
+         <label
+           className="flex items-center justify-between px-4 py-2 cursor-pointer w-full"
+         >
+           <span className="text-sm">
+             {room.name} ({room.capacity})
+           </span>
+           <input
+             type="checkbox"
+             checked={selected.includes(room.id.toString())}
+             onChange={() => handleCheckboxChange(room.id.toString())}
+             className="ml-2"
+           />
+         </label>
+       </li>
         ))}
       </ul>
 

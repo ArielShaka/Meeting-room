@@ -16,12 +16,10 @@ export function DateNavigator({ startDate, onPrev, onNext }: Props) {
       >
         ←
       </button>
-
       <span className="text-lg font-semibold">
         {format(startDate, 'd MMMM', { locale: sv })} -{' '}
         {format(addDays(startDate, 2), 'd MMMM', { locale: sv })}
       </span>
-
       <button
         onClick={onNext}
         className="bg-white border w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-100"
