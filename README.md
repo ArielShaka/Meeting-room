@@ -9,7 +9,15 @@ Users can select rooms, pick date ranges, and book available time slots with eas
 
 ## 🗂️ Project Structure
 
-Meeting-room/ ├── backend/ │ └── meeting-room-backend/ # NestJS backend └── frontend/ └── meeting-room-frontend/ # Next.js frontend
+ ```
+
+ Meeting-room/
+          ├── backend/ 
+                 └── meeting-room-backend/ # NestJS backend
+          └── frontend/
+                 └── meeting-room-frontend/ # Next.js frontend
+
+ ``` 
 
 
 ---
