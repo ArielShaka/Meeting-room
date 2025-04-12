@@ -22,11 +22,13 @@ Make sure you have **Node.js**, **npm**, and **PostgreSQL** installed.
 
 In your terminal run:
 
+ ```bash
 cd backend/meeting-room-backend
 
 npm install
 
-npm run start:dev
+npm run start:dev 
+```
 
 This starts the backend on [http://localhost:3000](http://localhost:3000).
 
@@ -42,6 +44,7 @@ In your sql query console, run these commands:
 
 -- To Insert rooms:
 
+```bash
 INSERT INTO room (name, capacity) VALUES 
 
 ('Ariel', 5), 
@@ -49,16 +52,19 @@ INSERT INTO room (name, capacity) VALUES
 ('Therese', 4), 
 
 ('Oliver', 10);
+```
 
 -- To Insert availability slots:
 
+```bash
 INSERT INTO availability (room_id, start_time, end_time, is_booked) VALUES
 
 (1, '09:00:00', '10:00:00', false), 
 
-(1, '10:00:00', '11:00:00', false), 
+(2, '10:00:00', '11:00:00', false), 
 
-(1, '11:00:00', '12:00:00', false);
+(3, '11:00:00', '12:00:00', false);
+```
 
 ### Frontend Setup
 
