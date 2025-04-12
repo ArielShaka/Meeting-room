@@ -163,7 +163,7 @@ export default function BookingPage() {
           <DateNavigator
             startDate={startDate}
             onPrev={() => setStartDate((prev) => moveDays(prev, 'backward'))}
-            onNext={() => setShowBookingInfo(true)}
+            onNext={() => setStartDate((next) => moveDays(next, 'forward'))}
           />
 
           <div className="flex-1 overflow-auto my-4">
