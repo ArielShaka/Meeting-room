@@ -26,6 +26,39 @@ Users can select rooms, pick date ranges, and book available time slots with eas
 
 Make sure you have **Node.js**, **npm**, and **PostgreSQL** installed.
 
+🛢️ Database Configuration
+
+This project uses PostgreSQL as its database. You need to ensure it's running locally before starting the backend.
+
+Default configuration (AppModule.ts):
+
+```bash
+TypeOrmModule.forRoot({
+  type: 'postgres',
+  host: 'localhost',
+  port: 5432,
+  username: 'postgres',
+  password: 'YOUR_PASSWORD_HERE',
+  database: 'meeting_rooms',
+  autoLoadEntities: true,
+  synchronize: true,
+})
+```
+
+💡 Replace YOUR_PASSWORD_HERE with your local PostgreSQL password.
+
+🧱 Creating the Database
+Before starting the backend, make sure to create a local PostgreSQL database named meeting_rooms(or any other name of your choice just make sure it matches the one in AppModule.ts ).
+
+Using the terminal:
+
+```bash
+createdb meeting_rooms
+```
+
+Or via a GUI (e.g. pgAdmin, TablePlus, etc.).
+
+
 ### 1. Start the Backend
 
 In your terminal run:
